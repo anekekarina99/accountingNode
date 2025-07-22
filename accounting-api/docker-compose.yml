@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: accounting_db_development
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    build: .
+    container_name: accounting_app
+    restart: on-failure
+    depends_on:
+      - db
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: your_password
+      DB_NAME: accounting_db_development
+      DB_TEST: accounting_db_test
+      DB_PROD: accounting_db_production
+    volumes:
+      - .:/usr/src/app
+    command: >
+      sh -c "npx sequelize-cli db:migrate && node server.js"
+
+volumes:
+  pgdata:
